@@ -1,165 +1,197 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashReward Admin Panel</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .sidebar { background-color: #1f2937; color: #d1d5db; }
-        .sidebar a { border-left: 3px solid transparent; transition: all 0.2s; }
-        .sidebar a:hover { background-color: #374151; }
-        .sidebar a.active { background-color: #4f46e5; color: white; border-left-color: #818cf8; }
-        .stat-card { background-color: white; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
-        .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.5s; }
-        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; transition: all 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn-primary { background-color: #4f46e5; color: white; }
-        .btn-primary:hover { background-color: #4338ca; }
-        .btn-success { background-color: #10b981; color: white; }
-        .btn-danger { background-color: #ef4444; color: white; }
-        .btn-warning { background-color: #f59e0b; color: white; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: #f9fafb; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Earn - Admin Panel</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 0;
+    }
+    .login-box, .panel {
+      max-width: 400px;
+      margin: 60px auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    h2 { color: #00796b; text-align: center; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #00796b;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #004d40; }
+    .section {
+      background: #e0f2f1;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .withdraw-item {
+      background: #f1f8e9;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .withdraw-item button {
+      width: 48%;
+      margin: 2px 1%;
+      font-size: 14px;
+    }
+    .settings input {
+      width: calc(100% - 20px);
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Admin Login -->
-    <div id="admin-login-view" class="min-h-screen flex items-center justify-center bg-gray-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <h1 class="text-3xl font-bold text-center text-gray-900">Admin Panel Login</h1>
-            <input id="admin-email" type="email" placeholder="Admin Email" class="w-full px-4 py-2 border rounded-lg">
-            <input id="admin-password" type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-lg">
-            <button id="admin-login-btn" class="w-full btn btn-primary">Login</button>
-        </div>
+  <div class="login-box" id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="email" id="email" placeholder="Enter Email">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button id="loginBtn">Login</button>
+  </div>
+
+  <div class="panel" id="adminPanel" style="display:none;">
+    <h2>Smart Earn Admin</h2>
+
+    <div class="section settings">
+      <h3>⚙ Settings</h3>
+      <label>Per Ad Earning (৳)</label>
+      <input type="number" id="adPayout" step="0.1">
+      <label>Per Refer Earning (৳)</label>
+      <input type="number" id="referPayout" step="0.1">
+      <label>Minimum Withdraw (৳)</label>
+      <input type="number" id="minWithdraw" step="1">
+      <button id="saveSettings">💾 Save Settings</button>
     </div>
 
-    <!-- Main Admin Dashboard -->
-    <div id="admin-dashboard" class="hidden">
-        <div class="flex h-screen">
-            <!-- Sidebar -->
-            <aside class="sidebar w-64 flex-shrink-0">
-                <div class="p-4 text-2xl font-bold text-white">CashReward</div>
-                <nav class="mt-8">
-                    <a href="#" class="nav-link block py-3 px-4" data-page="dashboard-page"><i data-lucide="home" class="inline-block w-5 h-5 mr-2"></i>Dashboard</a>
-                    <a href="#" class="nav-link block py-3 px-4" data-page="users-page"><i data-lucide="users" class="inline-block w-5 h-5 mr-2"></i>Users</a>
-                    <a href="#" class="nav-link block py-3 px-4" data-page="withdrawals-page"><i data-lucide="dollar-sign" class="inline-block w-5 h-5 mr-2"></i>Withdrawals</a>
-                    <a href="#" class="nav-link block py-3 px-4" data-page="notifications-page"><i data-lucide="send" class="inline-block w-5 h-5 mr-2"></i>Notifications</a>
-                    <a href="#" class="nav-link block py-3 px-4" data-page="settings-page"><i data-lucide="settings" class="inline-block w-5 h-5 mr-2"></i>Settings</a>
-                    <a href="#" id="admin-logout-btn" class="block py-3 px-4 mt-8"><i data-lucide="log-out" class="inline-block w-5 h-5 mr-2"></i>Logout</a>
-                </nav>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="flex-1 p-8 overflow-y-auto">
-                <!-- Dashboard Page -->
-                <div id="dashboard-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Total Users</h2><p id="total-users" class="text-4xl font-bold mt-2">0</p></div>
-                        <div class="stat-card p-6"><h2 class="text-gray-500 text-lg">Pending Withdrawals</h2><p id="pending-withdrawals" class="text-4xl font-bold mt-2">0</p></div>
-                    </div>
-                </div>
-
-                <!-- Users Page -->
-                <div id="users-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">User Management</h1>
-                    <div class="bg-white shadow rounded-lg overflow-x-auto">
-                        <table class="min-w-full">
-                            <thead><tr><th>Name</th><th>Email</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody id="users-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Withdrawals Page -->
-                <div id="withdrawals-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">Withdrawal Requests</h1>
-                     <div class="bg-white shadow rounded-lg overflow-x-auto">
-                        <table>
-                            <thead><tr><th>User Name</th><th>Amount</th><th>Method</th><th>Details</th><th>Requested At</th><th>Actions</th></tr></thead>
-                            <tbody id="withdrawals-table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Notifications Page -->
-                <div id="notifications-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">Send Notification</h1>
-                    <div class="stat-card p-6 max-w-lg">
-                        <div class="mb-4"><label for="notification-title" class="block font-semibold mb-2">Title</label><input type="text" id="notification-title" class="w-full px-4 py-2 border rounded-lg"></div>
-                        <div class="mb-6"><label for="notification-message" class="block font-semibold mb-2">Message</label><textarea id="notification-message" rows="4" class="w-full px-4 py-2 border rounded-lg"></textarea></div>
-                        <button id="send-notification-btn" class="btn btn-primary">Send to All Users</button>
-                    </div>
-                </div>
-
-                <!-- Settings Page -->
-                <div id="settings-page" class="page">
-                    <h1 class="text-3xl font-bold mb-6">App Settings</h1>
-                    <div class="stat-card p-6 max-w-lg">
-                        <div class="mb-6"><label for="min-withdrawal" class="block font-semibold mb-2">Minimum Withdrawal (Coins)</label><input type="number" id="min-withdrawal" class="w-full px-4 py-2 border rounded-lg"></div>
-                        <div class="mb-6"><label for="daily-ad-limit" class="block font-semibold mb-2">Daily Ad Watch Limit</label><input type="number" id="daily-ad-limit" class="w-full px-4 py-2 border rounded-lg"></div>
-                        <div class="mb-6">
-                            <label class="block font-semibold mb-2">Coin Value</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="number" id="coin-value-coins" class="w-full px-4 py-2 border rounded-lg">
-                                <span>Coins = ₹</span>
-                                <input type="number" id="coin-value-inr" class="w-full px-4 py-2 border rounded-lg">
-                            </div>
-                        </div>
-                        <div class="mb-6"><label class="block font-semibold mb-2">Payment Methods (comma-separated)</label><input type="text" id="payment-methods" class="w-full px-4 py-2 border rounded-lg" placeholder="e.g. UPI,Paytm"></div>
-                        <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
-                    </div>
-                </div>
-            </main>
-        </div>
+    <div class="section">
+      <h3>💰 Withdraw Requests</h3>
+      <div id="withdrawList"></div>
     </div>
-    
-    <!-- Alert Modal -->
-    <div id="custom-alert" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-6 w-full max-w-sm text-center shadow-xl">
-            <p id="alert-message" class="mb-4 text-gray-800"></p>
-            <button id="alert-ok-btn" class="btn btn-primary px-6">OK</button>
-        </div>
-    </div>
+  </div>
 
-    <!-- Confirmation Modal -->
-    <div id="custom-confirm" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-6 w-full max-w-sm text-center shadow-xl">
-            <p id="confirm-message" class="mb-6 text-gray-800"></p>
-            <div class="flex justify-center space-x-4">
-                <button id="confirm-cancel-btn" class="btn bg-gray-200 text-gray-800 px-6">Cancel</button>
-                <button id="confirm-ok-btn" class="btn btn-danger px-6">Confirm</button>
-            </div>
-        </div>
-    </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-    <script type="module">
-        const firebaseConfig = {
-            apiKey: "AIzaSyDI5sQSiaX71auqXzZeVo_qAg_FKi6ZJLY",
-            authDomain: "my-app-a1e05.firebaseapp.com",
-            databaseURL: "https://my-app-a1e05-default-rtdb.firebaseio.com",
-            projectId: "my-app-a1e05",
-            storageBucket: "my-app-a1e05.firebasestorage.app",
-            messagingSenderId: "976679185393",
-            appId: "1:976679185393:web:4c55111b4668ff0e8ab250",
-            measurementId: "G-J0M1M6YBX7"
-        };
+    // তোমার Firebase কনফিগারেশন
+    const firebaseConfig = {
+      apiKey: "AIzaSyAbbvEUnjEnbOPtZJyqL-CUEDy_nAZtGT4",
+      authDomain: "hridoy-f9c90.firebaseapp.com",
+      projectId: "hridoy-f9c90",
+      storageBucket: "hridoy-f9c90.firebasestorage.app",
+      messagingSenderId: "378490678321",
+      appId: "1:378490678321:web:623f8de0c24dda4dfdb910",
+      measurementId: "G-5X6Z7BWTFY"
+    };
 
-        const ADMIN_UIDS = ["zR6t3ehCHtWZWlWD9aqSixtTawt2"]; 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, query, where, onSnapshot, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-        
-        // বাকিটা আপনার কোড হুবহু অপরিবর্তিত অবস্থায় ঠিক রেখেছি...
-    </script>
+    const loginBox = document.getElementById("loginBox");
+    const adminPanel = document.getElementById("adminPanel");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const withdrawList = document.getElementById("withdrawList");
+
+    const adminEmail = "admin@gmail.com";
+    const adminPass = "42145643";
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = emailInput.value.trim();
+      const pass = passwordInput.value.trim();
+
+      if (email === adminEmail && pass === adminPass) {
+        loginBox.style.display = "none";
+        adminPanel.style.display = "block";
+      } else {
+        alert("❌ ভুল ইমেইল বা পাসওয়ার্ড!");
+      }
+    });
+
+    // Load settings
+    const settingsRef = ref(db, "settings");
+    onValue(settingsRef, (snap) => {
+      if (snap.exists()) {
+        const s = snap.val();
+        document.getElementById("adPayout").value = s.adPayout || 0.5;
+        document.getElementById("referPayout").value = s.referPayout || 1;
+        document.getElementById("minWithdraw").value = s.minWithdraw || 10;
+      }
+    });
+
+    document.getElementById("saveSettings").addEventListener("click", async () => {
+      const s = {
+        adPayout: parseFloat(document.getElementById("adPayout").value),
+        referPayout: parseFloat(document.getElementById("referPayout").value),
+        minWithdraw: parseFloat(document.getElementById("minWithdraw").value)
+      };
+      await set(settingsRef, s);
+      alert("✅ Settings updated successfully!");
+    });
+
+    // Withdraw Requests
+    const withdrawRef = ref(db, "withdraws");
+    onValue(withdrawRef, (snap) => {
+      withdrawList.innerHTML = "";
+      if (snap.exists()) {
+        const data = snap.val();
+        Object.entries(data).forEach(([id, item]) => {
+          const div = document.createElement("div");
+          div.className = "withdraw-item";
+          div.innerHTML = `
+            <p><b>User:</b> ${item.userId}</p>
+            <p><b>Method:</b> ${item.method}</p>
+            <p><b>Amount:</b> ৳${item.amount}</p>
+            <p><b>Account:</b> ${item.account}</p>
+            <p><b>Status:</b> ${item.status}</p>
+            <button onclick="approve('${id}', ${item.amount}, '${item.userId}')">✅ Approve</button>
+            <button onclick="reject('${id}')">❌ Reject</button>
+          `;
+          withdrawList.appendChild(div);
+        });
+      } else {
+        withdrawList.innerHTML = "<p>No withdraw requests yet.</p>";
+      }
+    });
+
+    // Approve / Reject Functions
+    window.approve = async (id, amount, userId) => {
+      await update(ref(db, "withdraws/" + id), { status: "approved" });
+      const userRef = ref(db, "users/" + userId);
+      const snap = await (await import("https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js")).get(userRef);
+      if (snap.exists()) {
+        const user = snap.val();
+        const newBalance = (user.balance || 0) - amount;
+        await update(userRef, { balance: newBalance });
+      }
+      alert("✅ Withdraw approved!");
+    };
+
+    window.reject = async (id) => {
+      await update(ref(db, "withdraws/" + id), { status: "rejected" });
+      alert("❌ Withdraw rejected!");
+    };
+  </script>
 </body>
 </html>
+
