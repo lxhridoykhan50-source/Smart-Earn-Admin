@@ -3,97 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Earn - Admin Panel</title>
+  <title>Smart Earn Admin Panel</title>
   <style>
     body {
       font-family: "Poppins", sans-serif;
-      background: linear-gradient(135deg, #e0f7fa, #ffffff);
-      margin: 0;
-      padding: 0;
-    }
-    .login-box, .panel {
-      max-width: 400px;
-      margin: 60px auto;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      background: linear-gradient(135deg, #e0f7f4, #f6fffc);
       padding: 20px;
     }
-    h2 { color: #00796b; text-align: center; }
-    input {
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 {
+      color: #00796b;
+      text-align: center;
+    }
+    input, button {
       width: 100%;
       padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
+      margin: 6px 0;
       border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
     }
     button {
-      background: #00796b;
+      background: #009688;
       color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 8px;
+      font-weight: 500;
       cursor: pointer;
-      font-weight: bold;
     }
-    button:hover { background: #004d40; }
-    .section {
-      background: #e0f2f1;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 20px;
+    button:hover {
+      background: #00796b;
     }
     .withdraw-item {
-      background: #f1f8e9;
+      border: 1px solid #ddd;
       padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      background: #f9fffd;
     }
     .withdraw-item button {
       width: 48%;
-      margin: 2px 1%;
-      font-size: 14px;
-    }
-    .settings input {
-      width: calc(100% - 20px);
+      margin: 5px 1%;
     }
   </style>
 </head>
 <body>
 
-  <div class="login-box" id="loginBox">
+  <div class="card" id="loginBox">
     <h2>Admin Login</h2>
-    <input type="email" id="email" placeholder="Enter Email">
-    <input type="password" id="password" placeholder="Enter Password">
+    <input type="email" id="adminEmail" placeholder="Email">
+    <input type="password" id="adminPass" placeholder="Password">
     <button id="loginBtn">Login</button>
   </div>
 
-  <div class="panel" id="adminPanel" style="display:none;">
-    <h2>Smart Earn Admin</h2>
+  <div class="card" id="adminPanel" style="display:none;">
+    <h2>Admin Panel</h2>
 
-    <div class="section settings">
-      <h3>⚙ Settings</h3>
-      <label>Per Ad Earning (৳)</label>
-      <input type="number" id="adPayout" step="0.1">
-      <label>Per Refer Earning (৳)</label>
-      <input type="number" id="referPayout" step="0.1">
-      <label>Minimum Withdraw (৳)</label>
-      <input type="number" id="minWithdraw" step="1">
-      <button id="saveSettings">💾 Save Settings</button>
-    </div>
+    <h3>⚙️ Settings</h3>
+    <label>Per Ad (৳):</label>
+    <input type="number" id="adPayout" placeholder="e.g. 0.5">
+    <label>Per Refer (৳):</label>
+    <input type="number" id="referPayout" placeholder="e.g. 1">
+    <label>Minimum Withdraw (৳):</label>
+    <input type="number" id="minWithdraw" placeholder="e.g. 10">
+    <button id="saveSettings">💾 Save Settings</button>
 
-    <div class="section">
-      <h3>💰 Withdraw Requests</h3>
-      <div id="withdrawList"></div>
-    </div>
+    <h3>💰 Withdraw Requests</h3>
+    <div id="withdrawList"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+    import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
 
-    // তোমার Firebase কনফিগারেশন
+    // ✅ Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAbbvEUnjEnbOPtZJyqL-CUEDy_nAZtGT4",
       authDomain: "hridoy-f9c90.firebaseapp.com",
@@ -109,89 +97,73 @@
 
     const loginBox = document.getElementById("loginBox");
     const adminPanel = document.getElementById("adminPanel");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
     const withdrawList = document.getElementById("withdrawList");
 
-    const adminEmail = "admin@gmail.com";
-    const adminPass = "42145643";
+    // 🔐 Admin Login
+    loginBtn.addEventListener("click", () => {
+      const email = document.getElementById("adminEmail").value.trim();
+      const pass = document.getElementById("adminPass").value.trim();
 
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      const email = emailInput.value.trim();
-      const pass = passwordInput.value.trim();
-
-      if (email === adminEmail && pass === adminPass) {
+      if (email === "admin@gmail.com" && pass === "42145643") {
         loginBox.style.display = "none";
         adminPanel.style.display = "block";
       } else {
-        alert("❌ ভুল ইমেইল বা পাসওয়ার্ড!");
+        alert("❌ Invalid credentials!");
       }
     });
 
-    // Load settings
-    const settingsRef = ref(db, "settings");
-    onValue(settingsRef, (snap) => {
-      if (snap.exists()) {
-        const s = snap.val();
-        document.getElementById("adPayout").value = s.adPayout || 0.5;
-        document.getElementById("referPayout").value = s.referPayout || 1;
-        document.getElementById("minWithdraw").value = s.minWithdraw || 10;
-      }
-    });
-
+    // ⚙️ Save Settings
     document.getElementById("saveSettings").addEventListener("click", async () => {
-      const s = {
-        adPayout: parseFloat(document.getElementById("adPayout").value),
-        referPayout: parseFloat(document.getElementById("referPayout").value),
-        minWithdraw: parseFloat(document.getElementById("minWithdraw").value)
-      };
-      await set(settingsRef, s);
+      const adPayout = parseFloat(document.getElementById("adPayout").value);
+      const referPayout = parseFloat(document.getElementById("referPayout").value);
+      const minWithdraw = parseFloat(document.getElementById("minWithdraw").value);
+
+      if (isNaN(adPayout) || isNaN(referPayout) || isNaN(minWithdraw)) {
+        alert("❗ Fill all fields correctly!");
+        return;
+      }
+
+      await set(ref(db, "settings"), { adPayout, referPayout, minWithdraw });
       alert("✅ Settings updated successfully!");
     });
 
-    // Withdraw Requests
-    const withdrawRef = ref(db, "withdraws");
-    onValue(withdrawRef, (snap) => {
+    // 💰 Load Withdraw Requests
+    onValue(ref(db, "withdraws"), (snap) => {
       withdrawList.innerHTML = "";
       if (snap.exists()) {
         const data = snap.val();
-        Object.entries(data).forEach(([id, item]) => {
-          const div = document.createElement("div");
-          div.className = "withdraw-item";
-          div.innerHTML = `
-            <p><b>User:</b> ${item.userId}</p>
-            <p><b>Method:</b> ${item.method}</p>
-            <p><b>Amount:</b> ৳${item.amount}</p>
-            <p><b>Account:</b> ${item.account}</p>
-            <p><b>Status:</b> ${item.status}</p>
-            <button onclick="approve('${id}', ${item.amount}, '${item.userId}')">✅ Approve</button>
-            <button onclick="reject('${id}')">❌ Reject</button>
-          `;
-          withdrawList.appendChild(div);
+        Object.keys(data).forEach((key) => {
+          const w = data[key];
+          if (w.status === "pending") {
+            const div = document.createElement("div");
+            div.className = "withdraw-item";
+            div.innerHTML = `
+              <p><strong>User:</strong> ${w.userId}</p>
+              <p><strong>Amount:</strong> ৳${w.amount}</p>
+              <p><strong>Method:</strong> ${w.method}</p>
+              <p><strong>Account:</strong> ${w.account}</p>
+              <button class="approveBtn">✅ Approve</button>
+              <button class="rejectBtn">❌ Reject</button>
+            `;
+
+            div.querySelector(".approveBtn").addEventListener("click", async () => {
+              await update(ref(db, "withdraws/" + key), { status: "approved" });
+              alert("✅ Withdraw Approved!");
+            });
+
+            div.querySelector(".rejectBtn").addEventListener("click", async () => {
+              await update(ref(db, "withdraws/" + key), { status: "rejected" });
+              alert("❌ Withdraw Rejected!");
+            });
+
+            withdrawList.appendChild(div);
+          }
         });
       } else {
-        withdrawList.innerHTML = "<p>No withdraw requests yet.</p>";
+        withdrawList.innerHTML = "<p>No pending requests</p>";
       }
     });
-
-    // Approve / Reject Functions
-    window.approve = async (id, amount, userId) => {
-      await update(ref(db, "withdraws/" + id), { status: "approved" });
-      const userRef = ref(db, "users/" + userId);
-      const snap = await (await import("https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js")).get(userRef);
-      if (snap.exists()) {
-        const user = snap.val();
-        const newBalance = (user.balance || 0) - amount;
-        await update(userRef, { balance: newBalance });
-      }
-      alert("✅ Withdraw approved!");
-    };
-
-    window.reject = async (id) => {
-      await update(ref(db, "withdraws/" + id), { status: "rejected" });
-      alert("❌ Withdraw rejected!");
-    };
   </script>
 </body>
 </html>
-
